@@ -1,0 +1,517 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+</head>
+<body style="margin:0">
+<title>ValiseConnect</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Sora:wght@500;600;700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@500&display=swap">
+<style>
+/* Layout : un téléphone centré sur grand écran, plein écran sur mobile ; 4 onglets en bas */
+:root {
+  --page: #dfe6ec;
+  --screen: #f5f7f9;
+  --card: #ffffff;
+  --ink: #142433;
+  --muted: #5e6f80;
+  --line: #dbe2e8;
+  --navy: #12324f;
+  --navy-2: #1d4a72;
+  --on-navy: #ffffff;
+  --mint: #148f63;
+  --mint-soft: #dff3ea;
+  --amber: #c98a0b;
+  --amber-soft: #fbf0d6;
+  --red: #c93a3a;
+  --red-soft: #f9e1e1;
+  --street: #ffffff;
+  --block: #e3e9ee;
+  --sea: #cfe2f0;
+  --bezel: #0b1622;
+  --font-display: "Sora", "Segoe UI", system-ui, sans-serif;
+  --font-body: "IBM Plex Sans", "Segoe UI", system-ui, sans-serif;
+  --font-mono: "IBM Plex Mono", ui-monospace, Consolas, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --page: #070d14; --screen: #0f1924; --card: #172433; --ink: #e8eef4; --muted: #94a6b8;
+    --line: #26384a; --navy: #1b4366; --navy-2: #24577f; --on-navy: #ffffff;
+    --mint: #3cc58f; --mint-soft: #133a2d; --amber: #e9ad35; --amber-soft: #3a2e12;
+    --red: #ec6464; --red-soft: #3d1a1c; --street: #22374b; --block: #142231; --sea: #10283b;
+    --bezel: #000000; color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --page: #070d14; --screen: #0f1924; --card: #172433; --ink: #e8eef4; --muted: #94a6b8;
+  --line: #26384a; --navy: #1b4366; --navy-2: #24577f; --on-navy: #ffffff;
+  --mint: #3cc58f; --mint-soft: #133a2d; --amber: #e9ad35; --amber-soft: #3a2e12;
+  --red: #ec6464; --red-soft: #3d1a1c; --street: #22374b; --block: #142231; --sea: #10283b;
+  --bezel: #000000; color-scheme: dark;
+}
+* { box-sizing: border-box; }
+body {
+  background: var(--page); color: var(--ink); font-family: var(--font-body);
+  padding-block: 24px; padding-inline: 16px; min-height: 100vh;
+  display: flex; flex-direction: column; align-items: center; gap: 14px;
+}
+.caption { font-size: 13px; color: var(--muted); text-align: center; max-width: 380px; line-height: 1.5; }
+.caption b { color: var(--ink); font-weight: 600; }
+
+.phone {
+  width: 100%; max-width: 390px; height: 780px; max-height: calc(100vh - 110px); min-height: 600px;
+  background: var(--screen); border: 10px solid var(--bezel); border-radius: 44px;
+  overflow: hidden; display: flex; flex-direction: column; position: relative;
+  box-shadow: 0 24px 60px rgba(8, 20, 33, .28);
+}
+@media (max-width: 440px) {
+  body { padding-block: 0; padding-inline: 0; }
+  .caption { display: none; }
+  .phone { max-width: none; height: 100vh; max-height: none; border: 0; border-radius: 0; box-shadow: none; }
+}
+
+/* En-tête */
+header {
+  background: var(--navy); color: var(--on-navy); padding: 30px 20px 18px;
+  transition: background .35s ease;
+}
+.phone.alarm header { background: var(--red); }
+.head-row { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; }
+.eyebrow { font-size: 10.5px; letter-spacing: .14em; text-transform: uppercase; opacity: .72; font-weight: 600; }
+h1 { font-family: var(--font-display); font-size: 22px; font-weight: 700; margin: 3px 0 0; }
+.batt { display: flex; align-items: center; gap: 6px; font-family: var(--font-mono); font-size: 13px; margin-top: 4px; }
+.batt-shell { width: 26px; height: 13px; border: 1.6px solid currentColor; border-radius: 3px; padding: 1.5px; position: relative; }
+.batt-shell::after { content: ""; position: absolute; right: -4px; top: 3px; width: 2px; height: 5px; background: currentColor; border-radius: 0 1px 1px 0; }
+.batt-fill { height: 100%; background: currentColor; border-radius: 1px; }
+.pills { display: flex; gap: 6px; margin-top: 14px; flex-wrap: wrap; }
+.pill {
+  font-size: 11.5px; font-weight: 600; padding: 4px 10px; border-radius: 999px;
+  background: rgba(255,255,255,.12); color: var(--on-navy); display: inline-flex; align-items: center; gap: 6px;
+}
+.pill i { width: 7px; height: 7px; border-radius: 50%; background: rgba(255,255,255,.4); }
+.pill.on i { background: #7ff0bf; box-shadow: 0 0 0 3px rgba(127,240,191,.22); }
+.pill.warn i { background: #ffd36b; }
+
+/* Corps */
+main { flex: 1; overflow-y: auto; padding: 18px 16px 20px; }
+.view[hidden] { display: none !important; }
+.view { display: flex; flex-direction: column; gap: 14px; }
+h2 { font-family: var(--font-display); font-size: 17px; font-weight: 600; margin: 0; }
+.sub { font-size: 12.5px; color: var(--muted); margin-top: 2px; }
+.card { background: var(--card); border: 1px solid var(--line); border-radius: 16px; padding: 16px; }
+
+/* Carte */
+.map-wrap { position: relative; border-radius: 16px; overflow: hidden; border: 1px solid var(--line); aspect-ratio: 1 / 1; max-width: 100%; }
+canvas { display: block; width: 100%; height: 100%; }
+.map-tag {
+  position: absolute; left: 10px; bottom: 10px; background: var(--card); color: var(--ink);
+  border: 1px solid var(--line); border-radius: 10px; padding: 7px 10px; font-size: 11.5px;
+}
+.coords { font-family: var(--font-mono); font-size: 12.5px; font-variant-numeric: tabular-nums; }
+.kv { display: grid; grid-template-columns: 1fr auto; gap: 8px 12px; font-size: 13px; }
+.kv dt { color: var(--muted); }
+.kv dd { margin: 0; font-weight: 600; text-align: right; font-variant-numeric: tabular-nums; }
+.sim-badge { font-size: 10.5px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; color: var(--amber); background: var(--amber-soft); padding: 2px 7px; border-radius: 6px; }
+
+/* Sécurité */
+.status { display: flex; align-items: center; gap: 14px; }
+.status-icon { width: 54px; height: 54px; border-radius: 16px; display: grid; place-items: center; flex-shrink: 0; transition: background .3s; }
+.status-icon svg { width: 28px; height: 28px; }
+.status-title { font-family: var(--font-display); font-weight: 700; font-size: 17px; }
+.st-off .status-icon { background: var(--line); color: var(--muted); }
+.st-armed .status-icon { background: var(--mint-soft); color: var(--mint); }
+.st-armed .status-title { color: var(--mint); }
+.st-alarm .status-icon { background: var(--red-soft); color: var(--red); animation: pulse 1s infinite; }
+.st-alarm .status-title { color: var(--red); }
+@keyframes pulse { 50% { transform: scale(1.06); } }
+@media (prefers-reduced-motion: reduce) { .st-alarm .status-icon { animation: none; } }
+
+.toggle-row { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.toggle-row .t { font-weight: 600; font-size: 14px; }
+.toggle-row .d { font-size: 12px; color: var(--muted); margin-top: 2px; }
+.switch { position: relative; width: 48px; height: 28px; flex-shrink: 0; }
+.switch input { position: absolute; inset: 0; opacity: 0; cursor: pointer; margin: 0; z-index: 1; }
+.switch span { position: absolute; inset: 0; background: var(--line); border-radius: 999px; transition: background .2s; }
+.switch span::after { content: ""; position: absolute; top: 3px; left: 3px; width: 22px; height: 22px; background: #fff; border-radius: 50%; transition: transform .2s; box-shadow: 0 1px 3px rgba(0,0,0,.25); }
+.switch input:checked + span { background: var(--mint); }
+.switch.amber input:checked + span { background: var(--amber); }
+.switch input:checked + span::after { transform: translateX(20px); }
+.switch input:focus-visible + span { outline: 2px solid var(--navy-2); outline-offset: 2px; }
+
+.label { font-size: 11px; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; color: var(--muted); }
+.btns { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+button.act {
+  font: 600 13px var(--font-body); padding: 11px 10px; border-radius: 12px; cursor: pointer;
+  border: 1.5px solid var(--line); background: var(--card); color: var(--ink);
+  display: flex; align-items: center; justify-content: center; gap: 7px;
+}
+button.act:hover:not(:disabled) { border-color: var(--red); color: var(--red); }
+button.act:disabled { opacity: .45; cursor: not-allowed; }
+button.act:focus-visible { outline: 2px solid var(--navy-2); outline-offset: 2px; }
+button.act svg { width: 17px; height: 17px; }
+.hint { font-size: 12px; color: var(--muted); line-height: 1.45; }
+.spark-head { display: flex; justify-content: space-between; align-items: baseline; }
+.spark-val { font-family: var(--font-mono); font-size: 13px; }
+svg.spark { width: 100%; height: 64px; display: block; margin-top: 8px; }
+
+/* Énergie */
+.gauge { display: flex; align-items: center; gap: 18px; }
+.ring { width: 110px; height: 110px; flex-shrink: 0; }
+.ring text { font-family: var(--font-display); font-weight: 700; fill: var(--ink); }
+.energy-meta { display: flex; flex-direction: column; gap: 4px; font-size: 13px; }
+.energy-meta b { font-size: 15px; }
+
+/* Historique */
+.events { list-style: none; margin: 0; padding: 0; }
+.events li { display: grid; grid-template-columns: 34px 1fr auto; gap: 12px; align-items: center; padding: 11px 0; border-bottom: 1px solid var(--line); }
+.events li:last-child { border-bottom: 0; }
+.dot { width: 34px; height: 34px; border-radius: 10px; display: grid; place-items: center; }
+.dot svg { width: 17px; height: 17px; }
+.ev-t { font-size: 13.5px; font-weight: 500; }
+.ev-s { font-size: 11.5px; color: var(--muted); margin-top: 1px; }
+.ev-h { font-family: var(--font-mono); font-size: 12px; color: var(--muted); }
+.c-mint { background: var(--mint-soft); color: var(--mint); }
+.c-red { background: var(--red-soft); color: var(--red); }
+.c-amber { background: var(--amber-soft); color: var(--amber); }
+.c-navy { background: var(--line); color: var(--navy-2); }
+
+/* Navigation */
+nav { display: grid; grid-template-columns: repeat(4, 1fr); border-top: 1px solid var(--line); background: var(--card); padding: 6px 4px calc(10px + env(safe-area-inset-bottom, 0px)); }
+nav button {
+  background: none; border: 0; cursor: pointer; color: var(--muted); font: 600 11px var(--font-body);
+  display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 6px 2px; border-radius: 12px;
+}
+nav button svg { width: 22px; height: 22px; }
+nav button[aria-selected="true"] { color: var(--navy-2); }
+nav button[aria-selected="true"] .ico { background: var(--line); }
+nav button .ico { padding: 3px 14px; border-radius: 999px; display: grid; place-items: center; transition: background .2s; }
+nav button:focus-visible { outline: 2px solid var(--navy-2); }
+
+.toast {
+  position: absolute; left: 50%; bottom: 86px; transform: translateX(-50%);
+  background: var(--ink); color: var(--screen); font-size: 13px; font-weight: 600;
+  padding: 9px 16px; border-radius: 12px; white-space: nowrap; box-shadow: 0 8px 24px rgba(0,0,0,.25);
+}
+.toast.bad { background: var(--red); color: #fff; }
+</style>
+
+<p class="caption"><b>Démo de l'application</b> de la valise intelligente connectée. Les données sont simulées : arme la valise dans l'onglet Sécurité, puis déclenche une intrusion.</p>
+
+<div class="phone" id="phone">
+  <header>
+    <div class="head-row">
+      <div>
+        <div class="eyebrow">Valise connectée</div>
+        <h1>Ma valise</h1>
+      </div>
+      <div class="batt" aria-label="Batterie">
+        <div class="batt-shell"><div class="batt-fill" id="battFill" style="width:82%"></div></div>
+        <span id="battTxt">82 %</span>
+      </div>
+    </div>
+    <div class="pills">
+      <span class="pill" id="pillArm"><i></i><span>Désarmée</span></span>
+      <span class="pill on" id="pillQi"><i></i><span>Charge Qi</span></span>
+      <span class="pill on"><i></i><span>WiFi · Firebase</span></span>
+    </div>
+  </header>
+
+  <main>
+    <!-- CARTE -->
+    <section class="view" id="v-carte">
+      <div>
+        <h2>Position de la valise</h2>
+        <div class="sub">Sfax, Tunisie · mise à jour toutes les 5 s</div>
+      </div>
+      <div class="map-wrap">
+        <canvas id="map" width="700" height="700" aria-label="Carte de la position de la valise"></canvas>
+        <div class="map-tag"><span class="sim-badge">GPS simulé</span></div>
+      </div>
+      <div class="card">
+        <dl class="kv">
+          <dt>Latitude</dt><dd class="coords" id="lat">34.74060° N</dd>
+          <dt>Longitude</dt><dd class="coords" id="lon">10.76030° E</dd>
+          <dt>Précision</dt><dd>± 5 m</dd>
+          <dt>Zone de sécurité</dt><dd id="zone">Dans la zone</dd>
+        </dl>
+      </div>
+    </section>
+
+    <!-- SÉCURITÉ -->
+    <section class="view" id="v-securite" hidden>
+      <div class="card status st-off" id="statusCard">
+        <div class="status-icon" id="statusIcon"></div>
+        <div>
+          <div class="status-title" id="statusTitle">Désarmée</div>
+          <div class="sub" id="statusSub">La surveillance est coupée</div>
+        </div>
+      </div>
+      <div class="card toggle-row">
+        <div>
+          <div class="t">Armer la valise</div>
+          <div class="d">Surveille l'ouverture (capteur ILS) et les mouvements (MPU6050)</div>
+        </div>
+        <label class="switch"><input type="checkbox" id="armSwitch" aria-label="Armer la valise"><span></span></label>
+      </div>
+      <div class="card">
+        <div class="spark-head">
+          <span class="label">Accélération</span>
+          <span class="spark-val" id="accVal">1.00 g</span>
+        </div>
+        <svg class="spark" id="spark" viewBox="0 0 300 64" preserveAspectRatio="none" aria-hidden="true"></svg>
+        <div class="hint">Seuil d'alarme : écart de 0,35 g par rapport à la position de repos.</div>
+      </div>
+      <div class="card" style="display:flex;flex-direction:column;gap:10px">
+        <span class="label">Simuler une intrusion</span>
+        <div class="btns">
+          <button class="act" id="btnOpen" disabled></button>
+          <button class="act" id="btnMove" disabled></button>
+        </div>
+        <div class="hint" id="simHint">Arme d'abord la valise pour tester l'alarme.</div>
+      </div>
+    </section>
+
+    <!-- ÉNERGIE -->
+    <section class="view" id="v-energie" hidden>
+      <div>
+        <h2>Énergie</h2>
+        <div class="sub">Batterie de la valise et recharge sans fil</div>
+      </div>
+      <div class="card gauge">
+        <svg class="ring" viewBox="0 0 120 120" aria-hidden="true">
+          <circle cx="60" cy="60" r="50" fill="none" stroke="var(--line)" stroke-width="11"></circle>
+          <circle id="ringArc" cx="60" cy="60" r="50" fill="none" stroke="var(--mint)" stroke-width="11" stroke-linecap="round" transform="rotate(-90 60 60)" stroke-dasharray="314.16" stroke-dashoffset="56"></circle>
+          <text x="60" y="66" text-anchor="middle" font-size="22" id="ringTxt">82%</text>
+        </svg>
+        <div class="energy-meta">
+          <b id="energyState">En décharge</b>
+          <span class="sub" id="energyEta">Autonomie estimée : 9 h</span>
+          <span class="sub">Batterie Li-ion 10 000 mAh</span>
+        </div>
+      </div>
+      <div class="card toggle-row">
+        <div>
+          <div class="t">Recharge sans fil (Qi)</div>
+          <div class="d">Recharge un téléphone posé sur la valise</div>
+        </div>
+        <label class="switch amber"><input type="checkbox" id="qiSwitch" checked aria-label="Recharge sans fil"><span></span></label>
+      </div>
+      <div class="card">
+        <dl class="kv">
+          <dt>Indicateur sur la valise</dt><dd>LED jaune · GPIO13</dd>
+          <dt>Puissance Qi</dt><dd id="qiPow">5 W</dd>
+        </dl>
+      </div>
+    </section>
+
+    <!-- HISTORIQUE -->
+    <section class="view" id="v-historique" hidden>
+      <div>
+        <h2>Historique</h2>
+        <div class="sub">Événements envoyés par la valise</div>
+      </div>
+      <div class="card" style="padding-block:4px">
+        <ul class="events" id="events"></ul>
+      </div>
+    </section>
+  </main>
+
+  <nav role="tablist" id="nav"></nav>
+  <div class="toast" id="toast" hidden></div>
+</div>
+
+<script>
+(function () {
+  // ----------------------------------------------------------- icônes
+  const I = {
+    map: '<path d="M9 4 3 6v14l6-2 6 2 6-2V4l-6 2-6-2Z"/><path d="M9 4v14M15 6v14"/>',
+    shield: '<path d="M12 3 4 6v6c0 4.5 3.4 8.3 8 9 4.6-.7 8-4.5 8-9V6l-8-3Z"/>',
+    bolt: '<path d="M13 2 4 14h7l-1 8 9-12h-7l1-8Z"/>',
+    clock: '<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/>',
+    lock: '<rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/>',
+    unlock: '<rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V8a4 4 0 0 1 7.5-2"/>',
+    alert: '<path d="M12 3 2 20h20L12 3Z"/><path d="M12 10v4M12 17.5v.01"/>',
+    door: '<path d="M6 21V4h9l3 2v15"/><path d="M3 21h18M12 12v.01"/>',
+    shake: '<rect x="8" y="5" width="8" height="14" rx="2"/><path d="M4 9v6M20 9v6"/>',
+    pin: '<path d="M12 21s-7-6.2-7-11a7 7 0 0 1 14 0c0 4.8-7 11-7 11Z"/><circle cx="12" cy="10" r="2.5"/>',
+    power: '<path d="M12 3v8M7 6.5a7 7 0 1 0 10 0"/>'
+  };
+  const svg = (name) => `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${I[name]}</svg>`;
+
+  const $ = (id) => document.getElementById(id);
+  const phone = $("phone");
+
+  // ----------------------------------------------------------- état simulé
+  const SFAX = { lat: 34.7406, lon: 10.7603 };
+  const S = {
+    etat: "desarmee", lat: SFAX.lat, lon: SFAX.lon, batt: 82, qi: true,
+    acc: Array.from({ length: 60 }, () => 1 + (Math.random() - .5) * .03),
+    events: []
+  };
+  const now = () => { const d = new Date(); return d.toTimeString().slice(0, 8); };
+  function log(t, s, icon, cls) { S.events.unshift({ t, s, icon, cls, h: now() }); if (S.events.length > 40) S.events.pop(); renderEvents(); }
+
+  // Exemples d'événements passés pour que l'historique ne soit pas vide
+  [["Valise désarmée", "Interrupteur d'armement", "unlock", "c-navy", "08:41:12"],
+   ["Position mise à jour", "Aéroport Sfax-Thyna", "pin", "c-navy", "08:15:03"],
+   ["Recharge sans fil activée", "Commande depuis l'application", "bolt", "c-amber", "07:58:47"]]
+    .forEach(([t, s, icon, cls, h]) => S.events.push({ t, s, icon, cls, h }));
+  S.events.unshift({ t: "Application connectée", s: "Firebase Realtime Database", icon: "power", cls: "c-mint", h: now() });
+
+  // ----------------------------------------------------------- navigation
+  const tabs = [["carte", "Carte", "map"], ["securite", "Sécurité", "shield"], ["energie", "Énergie", "bolt"], ["historique", "Historique", "clock"]];
+  $("nav").innerHTML = tabs.map(([id, label, icon], i) =>
+    `<button role="tab" id="tab-${id}" aria-selected="${i === 0}" data-v="${id}"><span class="ico">${svg(icon)}</span>${label}</button>`).join("");
+  function show(id) {
+    tabs.forEach(([t]) => { $("v-" + t).hidden = t !== id; $("tab-" + t).setAttribute("aria-selected", t === id); });
+    if (id === "carte") drawMap();
+  }
+  $("nav").addEventListener("click", (e) => { const b = e.target.closest("button"); if (b) show(b.dataset.v); });
+  const start = (location.hash || "").slice(1);
+  if (tabs.some(([t]) => t === start)) show(start);
+
+  // ----------------------------------------------------------- toast
+  let toastTimer;
+  function toast(msg, bad) {
+    const t = $("toast"); t.textContent = msg; t.className = "toast" + (bad ? " bad" : ""); t.hidden = false;
+    clearTimeout(toastTimer); toastTimer = setTimeout(() => (t.hidden = true), 2400);
+  }
+
+  // ----------------------------------------------------------- sécurité
+  $("btnOpen").innerHTML = svg("door") + "Ouverture";
+  $("btnMove").innerHTML = svg("shake") + "Mouvement";
+
+  function renderSecurity() {
+    const card = $("statusCard");
+    const cfg = {
+      desarmee: ["st-off", "unlock", "Désarmée", "La surveillance est coupée"],
+      armee: ["st-armed", "lock", "Armée", "Surveillance active · LED verte allumée"],
+      alarme: ["st-alarm", "alert", "Alarme déclenchée", "Buzzer et LED rouge actifs · désarme pour arrêter"]
+    }[S.etat];
+    card.className = "card status " + cfg[0];
+    $("statusIcon").innerHTML = svg(cfg[1]);
+    $("statusTitle").textContent = cfg[2];
+    $("statusSub").textContent = cfg[3];
+    $("armSwitch").checked = S.etat !== "desarmee";
+    const canSim = S.etat === "armee";
+    $("btnOpen").disabled = $("btnMove").disabled = !canSim;
+    $("simHint").textContent = S.etat === "desarmee" ? "Arme d'abord la valise pour tester l'alarme."
+      : S.etat === "armee" ? "Choisis une intrusion à simuler." : "Désarme la valise pour arrêter l'alarme.";
+    const pill = $("pillArm");
+    pill.className = "pill" + (S.etat === "armee" ? " on" : S.etat === "alarme" ? " warn" : "");
+    pill.querySelector("span").textContent = { desarmee: "Désarmée", armee: "Armée", alarme: "ALARME" }[S.etat];
+    phone.classList.toggle("alarm", S.etat === "alarme");
+  }
+
+  $("armSwitch").addEventListener("change", (e) => {
+    if (e.target.checked) { S.etat = "armee"; log("Valise armée", "Interrupteur d'armement", "lock", "c-mint"); toast("Valise armée"); }
+    else { S.etat = "desarmee"; log("Valise désarmée", "Alarme arrêtée par le propriétaire", "unlock", "c-navy"); toast("Valise désarmée"); }
+    renderSecurity(); drawMap();
+  });
+  function intrusion(cause, detail) {
+    if (S.etat !== "armee") return;
+    S.etat = "alarme";
+    if (cause === "Mouvement") for (let i = 0; i < 6; i++) S.acc[S.acc.length - 1 - i] = 1 + (Math.random() > .5 ? 1 : -1) * (.5 + Math.random() * .6);
+    log("ALARME : " + cause.toLowerCase(), detail, "alert", "c-red");
+    toast("Intrusion détectée : " + cause.toLowerCase(), true);
+    renderSecurity(); drawSpark(); drawMap();
+  }
+  $("btnOpen").addEventListener("click", () => intrusion("Ouverture", "Capteur ILS · couvercle ouvert"));
+  $("btnMove").addEventListener("click", () => intrusion("Mouvement", "MPU6050 · écart de 0,8 g"));
+
+  function drawSpark() {
+    const W = 300, H = 64, lo = 0, hi = 2.2;
+    const y = (v) => H - 4 - ((Math.min(hi, Math.max(lo, v)) - lo) / (hi - lo)) * (H - 8);
+    const pts = S.acc.map((v, i) => [(i / (S.acc.length - 1)) * W, y(v)]);
+    const line = pts.map((p, i) => (i ? "L" : "M") + p[0].toFixed(1) + " " + p[1].toFixed(1)).join(" ");
+    const col = S.etat === "alarme" ? "var(--red)" : "var(--mint)";
+    const last = pts[pts.length - 1];
+    $("spark").innerHTML =
+      `<line x1="0" x2="${W}" y1="${y(1.35)}" y2="${y(1.35)}" stroke="var(--amber)" stroke-dasharray="4 4" stroke-width="1"/>` +
+      `<line x1="0" x2="${W}" y1="${y(.65)}" y2="${y(.65)}" stroke="var(--amber)" stroke-dasharray="4 4" stroke-width="1"/>` +
+      `<path d="${line} L${W} ${H} L0 ${H} Z" fill="${col}" opacity=".12"/>` +
+      `<path d="${line}" fill="none" stroke="${col}" stroke-width="2" vector-effect="non-scaling-stroke"/>` +
+      `<circle cx="${last[0] - 3}" cy="${last[1]}" r="3.5" fill="${col}"/>`;
+    $("accVal").textContent = S.acc[S.acc.length - 1].toFixed(2) + " g";
+  }
+
+  // ----------------------------------------------------------- carte
+  const cv = $("map"), ctx = cv.getContext("2d");
+  const css = (n) => getComputedStyle(document.documentElement).getPropertyValue(n).trim();
+  function drawMap() {
+    if ($("v-carte").hidden) return;
+    const W = cv.width, H = cv.height;
+    ctx.fillStyle = css("--block"); ctx.fillRect(0, 0, W, H);
+    // mer (golfe de Gabès) en bas à droite
+    ctx.fillStyle = css("--sea");
+    ctx.beginPath(); ctx.moveTo(W, H * .55); ctx.quadraticCurveTo(W * .7, H * .72, W * .52, H); ctx.lineTo(W, H); ctx.fill();
+    // rues en grille + médina carrée
+    ctx.strokeStyle = css("--street"); ctx.lineCap = "round";
+    ctx.lineWidth = 18;
+    [[0, 230, W, 200], [0, 470, W * .62, 440], [180, 0, 210, H], [470, 0, 430, H * .75]].forEach(([a, b, c, d]) => { ctx.beginPath(); ctx.moveTo(a, b); ctx.lineTo(c, d); ctx.stroke(); });
+    ctx.lineWidth = 8;
+    for (let x = 60; x < W; x += 95) { ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x + 25, H); ctx.stroke(); }
+    for (let yy = 70; yy < H; yy += 110) { ctx.beginPath(); ctx.moveTo(0, yy); ctx.lineTo(W, yy - 20); ctx.stroke(); }
+    ctx.strokeStyle = css("--muted"); ctx.globalAlpha = .35; ctx.lineWidth = 3; ctx.strokeRect(260, 260, 150, 150); ctx.globalAlpha = 1;
+    ctx.fillStyle = css("--muted"); ctx.font = "600 20px " + css("--font-body"); ctx.fillText("Médina", 268, 250);
+
+    // position de la valise
+    const px = W / 2 + (S.lon - SFAX.lon) / .001 * W * .35;
+    const py = H / 2 - (S.lat - SFAX.lat) / .001 * H * .35;
+    const col = S.etat === "alarme" ? css("--red") : S.etat === "armee" ? css("--mint") : css("--navy-2");
+    // zone de sécurité (geofence)
+    ctx.setLineDash([10, 8]); ctx.strokeStyle = col; ctx.lineWidth = 3;
+    ctx.beginPath(); ctx.arc(W / 2, H / 2, 210, 0, Math.PI * 2); ctx.stroke(); ctx.setLineDash([]);
+    ctx.globalAlpha = .18; ctx.fillStyle = col; ctx.beginPath(); ctx.arc(px, py, 60, 0, Math.PI * 2); ctx.fill(); ctx.globalAlpha = 1;
+    ctx.fillStyle = col; ctx.beginPath(); ctx.arc(px, py, 22, 0, Math.PI * 2); ctx.fill();
+    ctx.fillStyle = "#fff"; ctx.beginPath(); ctx.arc(px, py, 9, 0, Math.PI * 2); ctx.fill();
+  }
+
+  // ----------------------------------------------------------- énergie
+  function renderEnergy() {
+    const b = S.batt, col = b > 50 ? "--mint" : b > 20 ? "--amber" : "--red";
+    $("battFill").style.width = b + "%";
+    $("battTxt").textContent = Math.round(b) + " %";
+    $("ringArc").setAttribute("stroke-dashoffset", (314.16 * (1 - b / 100)).toFixed(1));
+    $("ringArc").setAttribute("stroke", `var(${col})`);
+    $("ringTxt").textContent = Math.round(b) + "%";
+    $("energyState").textContent = S.qi ? "En décharge" : "Batterie au repos";
+    $("energyEta").textContent = S.qi ? `Autonomie estimée : ${Math.max(1, Math.round(b / 9))} h` : "Recharge Qi coupée";
+    $("qiPow").textContent = S.qi ? "5 W" : "0 W";
+    const p = $("pillQi"); p.className = "pill" + (S.qi ? " on" : ""); p.querySelector("span").textContent = S.qi ? "Charge Qi" : "Qi coupé";
+  }
+  $("qiSwitch").addEventListener("change", (e) => {
+    S.qi = e.target.checked;
+    log(S.qi ? "Recharge sans fil activée" : "Recharge sans fil coupée", "Commande depuis l'application", "bolt", "c-amber");
+    toast(S.qi ? "Recharge sans fil activée" : "Recharge sans fil coupée");
+    renderEnergy();
+  });
+
+  // ----------------------------------------------------------- historique
+  function renderEvents() {
+    $("events").innerHTML = S.events.map((e) =>
+      `<li><span class="dot ${e.cls}">${svg(e.icon)}</span><div><div class="ev-t">${e.t}</div><div class="ev-s">${e.s}</div></div><span class="ev-h">${e.h}</span></li>`).join("");
+  }
+
+  // ----------------------------------------------------------- boucle de simulation (comme l'ESP32 toutes les secondes)
+  function tick() {
+    S.lat = SFAX.lat + (Math.random() - .5) * .0006;
+    S.lon = SFAX.lon + (Math.random() - .5) * .0006;
+    $("lat").textContent = S.lat.toFixed(5) + "° N";
+    $("lon").textContent = S.lon.toFixed(5) + "° E";
+    const base = S.etat === "alarme" ? 1 + (Math.random() - .5) * .9 : 1 + (Math.random() - .5) * .04;
+    S.acc.push(base); S.acc.shift();
+    S.batt = Math.min(100, Math.max(5, S.batt + (S.qi ? -0.12 : 0.02)));
+    renderEnergy(); drawSpark(); drawMap();
+  }
+
+  renderSecurity(); renderEnergy(); renderEvents(); drawSpark(); drawMap();
+  setInterval(tick, 1000);
+  try { matchMedia("(prefers-color-scheme: dark)").addEventListener("change", drawMap); } catch (_) {}
+  new MutationObserver(drawMap).observe(document.documentElement, { attributes: true, attributeFilter: ["data-theme"] });
+})();
+</script>
+
+</body>
+</html>

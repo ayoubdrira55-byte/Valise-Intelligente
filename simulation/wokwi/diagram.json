@@ -1,0 +1,46 @@
+{
+  "version": 1,
+  "author": "Ayoub Drira",
+  "editor": "wokwi",
+  "parts": [
+    { "type": "board-esp32-devkit-c-v4", "id": "esp", "top": 0, "left": 0, "attrs": {} },
+    { "type": "wokwi-mpu6050", "id": "imu", "top": -140, "left": 160, "attrs": {} },
+    { "type": "wokwi-buzzer", "id": "buzzer", "top": -120, "left": -150, "attrs": { "volume": "0.2" } },
+    { "type": "wokwi-led", "id": "led_rouge", "top": 230, "left": -170, "attrs": { "color": "red", "label": "Alarme" } },
+    { "type": "wokwi-led", "id": "led_verte", "top": 230, "left": -110, "attrs": { "color": "green", "label": "Armée" } },
+    { "type": "wokwi-led", "id": "led_qi", "top": 230, "left": -50, "attrs": { "color": "yellow", "label": "Qi" } },
+    { "type": "wokwi-resistor", "id": "r1", "top": 190, "left": -190, "rotate": 90, "attrs": { "value": "220" } },
+    { "type": "wokwi-resistor", "id": "r2", "top": 190, "left": -130, "rotate": 90, "attrs": { "value": "220" } },
+    { "type": "wokwi-resistor", "id": "r3", "top": 190, "left": -70, "rotate": 90, "attrs": { "value": "220" } },
+    { "type": "wokwi-slide-switch", "id": "reed", "top": 230, "left": 170, "attrs": { "label": "Couvercle (ILS)" } },
+    { "type": "wokwi-slide-switch", "id": "arm", "top": 230, "left": 250, "attrs": { "label": "Armement" } }
+  ],
+  "connections": [
+    [ "esp:TX", "$serialMonitor:RX", "", [] ],
+    [ "esp:RX", "$serialMonitor:TX", "", [] ],
+
+    [ "imu:VCC", "esp:3V3", "red", [] ],
+    [ "imu:GND", "esp:GND.2", "black", [] ],
+    [ "imu:SDA", "esp:21", "blue", [] ],
+    [ "imu:SCL", "esp:22", "orange", [] ],
+
+    [ "buzzer:2", "esp:26", "purple", [] ],
+    [ "buzzer:1", "esp:GND.1", "black", [] ],
+
+    [ "esp:25", "r1:1", "red", [] ],
+    [ "r1:2", "led_rouge:A", "red", [] ],
+    [ "led_rouge:C", "esp:GND.1", "black", [] ],
+    [ "esp:27", "r2:1", "green", [] ],
+    [ "r2:2", "led_verte:A", "green", [] ],
+    [ "led_verte:C", "esp:GND.1", "black", [] ],
+    [ "esp:13", "r3:1", "gold", [] ],
+    [ "r3:2", "led_qi:A", "gold", [] ],
+    [ "led_qi:C", "esp:GND.1", "black", [] ],
+
+    [ "reed:2", "esp:33", "gray", [] ],
+    [ "reed:1", "esp:GND.2", "black", [] ],
+    [ "arm:2", "esp:32", "white", [] ],
+    [ "arm:1", "esp:GND.2", "black", [] ]
+  ],
+  "dependencies": {}
+}
